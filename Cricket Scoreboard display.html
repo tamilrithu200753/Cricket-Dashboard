@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)file:///C:/Users/Admin/Desktop/cricket%20board.html/cricket.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>Cricket Scoreboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+      text-align: center;
+    }
+    .container {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 650px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 10px 5px;
+      font-size: 16px;
+    }
+    .teams {
+      font-size: 20px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .score-section {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin: 20px 0;
+    }
+    .score-box {
+      background: #3498db;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 130px;
+      font-size: 20px;
+    }
+    .overs-box {
+      background: #e67e22;
+    }
+    .buttons {
+      margin-top: 15px;
+    }
+    .buttons button {
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .buttons button:hover {
+      background: #27ae60;
+    }
+    .run-history {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+    }
+    .run-box {
+      background: #2980b9;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .error {
+      color: red;
+      margin-top: 5px;
+    }
+    .reset-btn {
+      background: #e74c3c !important;
+    }
+    .reset-btn:hover {
+      background: #c0392b !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🏏 Cricket Scoreboard</h1>
+
+    <!-- Team Name Inputs -->
+    <div>
+      <input type="text" id="teamA" placeholder="Enter Team A Name">
+      <input type="text" id="teamB" placeholder="Enter Team B Name">
+      <button onclick="loadTeams()">Set Teams</button>
+    </div>
+
+    <!-- Batting/Bowling Selection -->
+    <div>
+      <select id="battingTeam">
+        <option value="">-- Select Batting Team --</option>
+      </select>
+      <select id="bowlingTeam">
+        <option value="">-- Select Bowling Team --</option>
+      </select>
+      <button onclick="startMatch()">Start Match</button>
+      <button class="reset-btn" onclick="resetMatch()">Reset</button>
+      <div class="error" id="errorMessage"></div>
+    </div>
+
+    <!-- Display Teams -->
+    <div class="teams" id="teamsDisplay"></div>
+
+    <!-- Score Display -->
+    <div class="score-section">
+      <div class="score-box" id="runsDisplay">Runs: 0</div>
+      <div class="score-box" id="wicketsDisplay">Wickets: 0</div>
+      <div class="score-box overs-box" id="oversDisplay">Overs: 0.0</div>
+    </div>
+
+    <!-- Scoring Buttons -->
+    <div class="buttons">
+      <button onclick="addRun(0)">0</button>
+      <button onclick="addRun(1)">1</button>
+      <button onclick="addRun(2)">2</button>
+      <button onclick="addRun(3)">3</button>
+      <button onclick="addRun(4)">4</button>
+      <button onclick="addRun(6)">6</button>
+      <button onclick="addWicket()">Wicket</button>
+    </div>
+
+    <!-- Ball-by-ball Run History -->
+    <div class="run-history" id="runHistory"></div>
+  </div>
+
+  <script>
+    let runs = 0, wickets = 0, balls = 0, overs = 0;
+    let batting = "", bowling = "";
+    let runLog = [];
+
+    function loadTeams() {
+      const teamA = document.getElementById("teamA").value.trim();
+      const teamB = document.getElementById("teamB").value.trim();
+
+      if (!teamA || !teamB) {
+        document.getElementById("errorMessage").innerText = "Please enter both team names.";
+        return;
+      }
+
+      const batSel = document.getElementById("battingTeam");
+      const bowlSel = document.getElementById("bowlingTeam");
+
+      batSel.innerHTML = `<option value="">-- Select Batting Team --</option>
+        <option value="${teamA}">${teamA}</option>
+        <option value="${teamB}">${teamB}</option>`;
+      bowlSel.innerHTML = `<option value="">-- Select Bowling Team --</option>
+        <option value="${teamA}">${teamA}</option>
+        <option value="${teamB}">${teamB}</option>`;
+
+      document.getElementById("teamsDisplay").innerText = "";
+      document.getElementById("errorMessage").innerText = "";
+    }
+
+    function startMatch() {
+      batting = document.getElementById("battingTeam").value;
+      bowling = document.getElementById("bowlingTeam").value;
+
+      if (!batting || !bowling || batting === bowling) {
+        document.getElementById("errorMessage").innerText = "Select different teams for batting and bowling.";
+        return;
+      }
+
+      document.getElementById("teamsDisplay").innerText = `🏏 Batting: ${batting} | Bowling: ${bowling}`;
+      document.getElementById("errorMessage").innerText = "";
+    }
+
+    function addRun(run) {
+      if (!batting || !bowling) {
+        alert("Start the match first.");
+        return;
+      }
+      runs += run;
+      runLog.push(run);
+      updateBall();
+    }
+
+    function addWicket() {
+      if (!batting || !bowling) {
+        alert("Start the match first.");
+        return;
+      }
+      wickets++;
+      runLog.push("W");
+      updateBall();
+    }
+
+    function updateBall() {
+      balls++;
+      if (balls === 6) {
+        overs++;
+        balls = 0;
+      }
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById("runsDisplay").innerText = `Runs: ${runs}`;
+      document.getElementById("wicketsDisplay").innerText = `Wickets: ${wickets}`;
+      document.getElementById("oversDisplay").innerText = `Overs: ${overs}.${balls}`;
+
+      const history = document.getElementById("runHistory");
+      history.innerHTML = "";
+      runLog.forEach(r => {
+        const box = document.createElement("div");
+        box.className = "run-box";
+        box.innerText = r;
+        history.appendChild(box);
+      });
+    }
+
+    function resetMatch() {
+      runs = 0;
+      wickets = 0;
+      balls = 0;
+      overs = 0;
+      runLog = [];
+      batting = "";
+      bowling = "";
+
+      document.getElementById("teamA").value = "";
+      document.getElementById("teamB").value = "";
+
+      document.getElementById("battingTeam").innerHTML = `<option value="">-- Select Batting Team --</option>`;
+      document.getElementById("bowlingTeam").innerHTML = `<option value="">-- Select Bowling Team --</option>`;
+
+      document.getElementById("teamsDisplay").innerText = "";
+      document.getElementById("errorMessage").innerText = "";
+      updateDisplay();
+    }
+  </script>
+
+
+
+</body></html>
